@@ -2,6 +2,8 @@
 
 #include <openssl/sha.h>
 
+uint64_t return_hash(unsigned char* to_hash);
+
 class CuckooFilter
 {
 public:
@@ -16,7 +18,6 @@ public:
   @param to_hash - pointer to unsigned char array on which to calculate SHA1
   @return uint64_t - result
   */
-  uint64_t return_hash(unsigned char *to_hash);
 
   /**
   Returns H_KEY structure which has 3 values: first hash (32 bits), second hash (32 bits) and fingerprint (32 bits).

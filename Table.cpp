@@ -4,12 +4,16 @@
 #include <iterator>
 #include <ctime>
 #include <cstdlib>
+#include "Cuckoo.h"
 
 using namespace std;
 
-Table::Table(int number_of_buckets, int bucket_size){
+Table::Table(int number_of_buckets, int bucket_size, int MNK){
 	this->number_of_buckets = number_of_buckets;
 	this->bucket_size = bucket_size;
+	this->MNK = MNK;
+	this->MNK_counter = 0;
+
 	srand(unsigned(time(0)));
 
 	for (int i = 0; i < number_of_buckets; i++) {
@@ -22,14 +26,59 @@ int Table::position(uint32_t hash) {
 	return hash % this->number_of_buckets;
 }
 
-bool Table::insert(uint32_t hash) {
-	int position = this->position(hash);
-	
-	if (this->hash_table[position].size() >= this->bucket_size) {
-		return false;
-	}
+bool Table::insert(uint32_t hash1, uint32_t hash2, uint32_t fingerprint) {
+	int position1 = this->position(hash1);
+	int position2 = this->position(hash2);
 
-	hash_table[position].push_back(hash);
+	
+	if (this->hash_table[position1].size() < this->bucket_size && this->hash_table[position2].size() < this->bucket_size) {
+		int random_bucket = rand() % 2 + 1;
+		if(random_bucket == 1)
+			hash_table[position1].push_back(fingerprint);
+		else
+			hash_table[position2].push_back(fingerprint);
+		return true;
+	}
+	else if (this->hash_table[position1].size() >= this->bucket_size && this->hash_table[position2].size() < this->bucket_size) {
+		hash_table[position2].push_back(fingerprint);
+		return true;
+	}
+	else if (this->hash_table[position1].size() < this->bucket_size && this->hash_table[position2].size() >= this->bucket_size) {
+		hash_table[position1].push_back(fingerprint);
+		return true;
+	}
+	else{
+
+		if (this->MNK_counter >= this->MNK)
+			return false;
+
+		int random_bucket = rand() % 2 + 1;
+		int random_compartment = rand() % this->bucket_size;
+
+		if (random_bucket == 1) {
+			uint32_t fingerprint_to_relocate = hash_table[position1][random_compartment];
+			hash_table[position1][random_compartment]= fingerprint;
+			HashOutput tmp;
+			tmp.hash_32 = fingerprint_to_relocate;
+			uint32_t new_hash = hash1 ^ (uint32_t)return_hash(tmp.sha_output);
+			this->MNK_counter += 1;
+			bool confirmation = this->insert(hash1, new_hash, fingerprint_to_relocate);
+			if (confirmation == false)
+				return false;
+		}
+		else {
+			uint32_t fingerprint_to_relocate = hash_table[position1][random_compartment];
+			hash_table[position1][random_compartment] = fingerprint;
+			HashOutput tmp;
+			tmp.hash_32 = fingerprint_to_relocate;
+			uint32_t new_hash = hash2 ^ (uint32_t)return_hash(tmp.sha_output);
+			this->MNK_counter += 1;
+			bool confirmation = this->insert(new_hash, hash2, fingerprint_to_relocate);
+			if (confirmation == false)
+				return false;
+		}
+		
+	}
 	return true;
 }
 
@@ -51,8 +100,19 @@ uint32_t Table::get_random(uint32_t hash) {
 
 	uint32_t tmp = vec[random_position];
 	vec.erase(vec.begin() + random_position);
+
+	return tmp;
 }
 
-int main() {
 
+bool Table::lookup(uint32_t hash1, uint32_t hash2, uint32_t fingerprint) {
+	int position1 = this->position(hash1);
+	int position2 = this->position(hash2);
+
+	if (std::find(this->hash_table[position1].begin(), this->hash_table[position1].end(), fingerprint) != this->hash_table[position1].end() || std::find(this->hash_table[position2].begin(), this->hash_table[position2].end(), fingerprint) != this->hash_table[position2].end()) {
+		return true;
+	}
+	else {
+		return false;
+	}
 }
