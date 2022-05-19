@@ -55,7 +55,7 @@ struct H_KEY CuckooFilter::AddrAndFingerprint(uint64_t has) {
     return to_ret;
 }
 
-set<char*> CuckooFilter::load_random(const char *filename, int number_of_unique, int length_of_sequence, int interval) {
+set<string> CuckooFilter::load_random(const char *filename, int number_of_unique, int length_of_sequence, int interval) {
     ifstream file;
     file.open(filename);
 
@@ -64,7 +64,7 @@ set<char*> CuckooFilter::load_random(const char *filename, int number_of_unique,
         exit(1);
     }
 
-    set<char*> unique;
+    set<string> unique;
 
 
     for (int n = 0; n < number_of_unique; n++) {
@@ -89,13 +89,13 @@ set<char*> CuckooFilter::load_random(const char *filename, int number_of_unique,
         if (file.tellg() == -1) {
             break;
         }
-        unique.insert(buffer);
+        unique.insert(string(buffer));
     }
 
     return unique;
 }
 
-set<char*> CuckooFilter::load_file(const char* filename, int interval) {
+set<string> CuckooFilter::load_file(const char* filename, int interval) {
     ifstream file;
     file.open(filename);
 
@@ -104,7 +104,7 @@ set<char*> CuckooFilter::load_file(const char* filename, int interval) {
         exit(1);
     }
 
-    set<char*> unique;
+    set<string> unique;
     int counter = 0;
 
     while (file.tellg() != -1) {
@@ -124,7 +124,7 @@ set<char*> CuckooFilter::load_file(const char* filename, int interval) {
         }
 
         if (file.tellg() != -1) {
-            unique.insert(buffer);
+            unique.insert(string(buffer));
             // cout << buffer << endl;
             counter++;
             if (counter % 100000 == 0) {
@@ -139,19 +139,19 @@ set<char*> CuckooFilter::load_file(const char* filename, int interval) {
 }
 
 Table CuckooFilter::construct_table(const char *filename, int interval, int MNK, bool reduce_relocations) {
-    set<char*> unique = this->load_file(filename, interval);
+    set<string> unique = this->load_file(filename, interval);
 
     cout << "SIZE: " << unique.size() << endl;
 
     Table table1(this->number_of_buckets, this->bucket_size, MNK, reduce_relocations);
 
-    set<char*>::iterator it;
+    set<string>::iterator it;
 
     int counter = 0;
 
     for (it = unique.begin(); it != unique.end(); ++it) {
         counter++;
-        uint64_t hash = return_hash((unsigned char*) *it);
+        uint64_t hash = return_hash((unsigned char*) it->c_str());
         H_KEY got = this->AddrAndFingerprint(hash);
 
         bool res = table1.insert(got.h_1, got.h_2, got.fingerprint);

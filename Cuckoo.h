@@ -3,6 +3,7 @@
 #include <openssl/sha.h>
 #include <set>
 #include "Table.h"
+#include <string>
 
 uint64_t return_hash(unsigned char* to_hash);
 
@@ -31,8 +32,8 @@ public:
 	Table construct_table(const char *filename, int interval, int MNK, bool reduce_relocations);
 
 private:
-	std::set<char*> load_random(const char* filename, int number_of_unique, int length_of_sequence, int interval);
-	std::set<char*> load_file(const char* filename, int interval);
+	std::set<std::string> load_random(const char* filename, int number_of_unique, int length_of_sequence, int interval);
+	std::set<std::string> load_file(const char* filename, int interval);
 };
 
 /**

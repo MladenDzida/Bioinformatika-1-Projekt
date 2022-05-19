@@ -72,7 +72,7 @@ int main() {
     cout << "fingerprint2 se nalazi u tablici za hash2? " << table1.lookup(got_2.h_1, got_2.h_2, got_2.fingerprint) << endl;
     cout << "fingerprint1 se nalazi u tablici za hash2? " << table1.lookup(got_2.h_1, got_2.h_2, got.fingerprint) << endl;*/
 
-    CuckooFilter filter(131072, 4, 18);
+    CuckooFilter filter(131072, 100, 18);
     // set<char*> ha = filter.load_file(
     //     "C:\\Users\\grga\\Documents\\Fakultet\\DIPLOMSKI\\2_semestar\\bioinformatika_1\\Bioinformatika_1\\Bioinformatika_1\\Bioinformatika-1-Projekt\\genom.fna",
     //     10);
@@ -82,7 +82,19 @@ int main() {
         // cout << *it << endl;
     // }
 
-    Table table = filter.construct_table("C:\\Users\\grga\\Documents\\Fakultet\\DIPLOMSKI\\2_semestar\\bioinformatika_1\\Bioinformatika_1\\Bioinformatika_1\\Bioinformatika-1-Projekt\\idemo.txt",
-        3, 1000, false);
+    Table table = filter.construct_table("C:\\Users\\grga\\Documents\\Fakultet\\DIPLOMSKI\\2_semestar\\bioinformatika_1\\Bioinformatika_1\\Bioinformatika_1\\Bioinformatika-1-Projekt\\genom.fna",
+        10, 1000, false);
+
+    while (true) {
+        string s;
+        cout << "Write sequeance:" << endl;
+        cin >> s;
+
+        uint64_t returned = return_hash((unsigned char*)s.c_str());
+        H_KEY got = filter.AddrAndFingerprint(returned);
+        cout << table.lookup(got.h_1, got.h_2, got.fingerprint) << endl;
+    }
+
+
     system("Pause");
 }
