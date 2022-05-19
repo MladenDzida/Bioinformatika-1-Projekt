@@ -4,15 +4,18 @@
 #include <iterator>
 #include <ctime>
 #include <cstdlib>
-#include "Cuckoo.h"
+#include <iostream>
+#include <iomanip>
+#include <string>
 
 using namespace std;
 
-Table::Table(int number_of_buckets, int bucket_size, int MNK){
+Table::Table(int number_of_buckets, int bucket_size, int MNK, bool reduce_relocations){
 	this->number_of_buckets = number_of_buckets;
 	this->bucket_size = bucket_size;
 	this->MNK = MNK;
 	this->MNK_counter = 0;
+	this->reduce_relocations = reduce_relocations;
 
 	srand(unsigned(time(0)));
 
@@ -32,11 +35,20 @@ bool Table::insert(uint32_t hash1, uint32_t hash2, uint32_t fingerprint) {
 
 	
 	if (this->hash_table[position1].size() < this->bucket_size && this->hash_table[position2].size() < this->bucket_size) {
-		int random_bucket = rand() % 2 + 1;
-		if(random_bucket == 1)
-			hash_table[position1].push_back(fingerprint);
-		else
-			hash_table[position2].push_back(fingerprint);
+		if (this->reduce_relocations == false) {
+			int random_bucket = rand() % 2 + 1;
+			if (random_bucket == 1)
+				hash_table[position1].push_back(fingerprint);
+			else
+				hash_table[position2].push_back(fingerprint);
+		}
+		else {
+			if (this->hash_table[position1].size() <= this->hash_table[position2].size())
+				hash_table[position1].push_back(fingerprint);
+			else
+				hash_table[position2].push_back(fingerprint);
+		}
+
 		return true;
 	}
 	else if (this->hash_table[position1].size() >= this->bucket_size && this->hash_table[position2].size() < this->bucket_size) {
@@ -48,7 +60,6 @@ bool Table::insert(uint32_t hash1, uint32_t hash2, uint32_t fingerprint) {
 		return true;
 	}
 	else{
-
 		if (this->MNK_counter >= this->MNK)
 			return false;
 
@@ -91,7 +102,7 @@ double Table::get_fill() {
 		size += this->hash_table[i].size();
 	}
 
-	return (double)(size / (this->number_of_buckets * this->bucket_size));
+	return ((double) size / (this->number_of_buckets * this->bucket_size));
 }
 
 uint32_t Table::get_random(uint32_t hash) {
@@ -114,5 +125,55 @@ bool Table::lookup(uint32_t hash1, uint32_t hash2, uint32_t fingerprint) {
 	}
 	else {
 		return false;
+	}
+}
+
+void Table::print_horizontal_line(char c) {
+	for (int i = 0; i < this->bucket_size; i++) {
+		cout
+			<< left
+			<< '+' << c << c << c << c << c << c << c << c << c;
+	}
+	cout << '+' << endl;
+}
+
+void Table::print_table() {
+	this->print_horizontal_line('=');
+
+	for (int i = 0; i < this->bucket_size; i++) {
+		cout
+			<< left
+			<< setw(3)
+			<< "|"
+			<< setw(7)
+			<< "T:" + std::to_string(i);
+	}
+	cout << "|" << endl;
+
+	this->print_horizontal_line('=');
+
+	for (int i = 0; i < this->number_of_buckets; i++) {
+		int max_bucket = this->hash_table[i].size();
+		std::vector<uint32_t> tmp = this->hash_table[i];
+
+		for (int j = 0; j < this->bucket_size; j++) {
+			if (max_bucket > j) {
+				cout
+					<< left
+					<< setw(5)
+					<< "|"
+					<< setw(5)
+					<< tmp[j];
+				continue;
+			}
+
+			cout
+				<< left
+				<< setw(10)
+				<< "|";
+		}
+		cout << "|" << endl;
+
+		this->print_horizontal_line('_');
 	}
 }

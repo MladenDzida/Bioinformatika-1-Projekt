@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include "Cuckoo.h"
 
 class Table {
 public:
@@ -9,8 +8,9 @@ public:
 	int bucket_size;
 	int MNK;
 	int MNK_counter;
+	bool reduce_relocations;
 
-	Table(int number_of_buckets, int bucket_size, int MNK);
+	Table(int number_of_buckets, int bucket_size, int MNK, bool use_random);
 
 	bool insert(uint32_t hash1, uint32_t hash2, uint32_t fingerprint);
 
@@ -20,8 +20,12 @@ public:
 
 	bool lookup(uint32_t hash1, uint32_t hash2, uint32_t fingerprint);
 
+	void print_table();
+
 private:
 	std::vector<std::vector<uint32_t>> hash_table;
 
 	int position(uint32_t hash);
+
+	void print_horizontal_line(char c);
 };
