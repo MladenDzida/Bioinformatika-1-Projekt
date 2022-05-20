@@ -13,6 +13,7 @@ public:
 	int number_of_buckets;
 	int bucket_size;
 	int fingerprint_size_in_bits;
+	std::vector<double> insertion_time;
 
 	CuckooFilter(int number_of_buckets, int bucket_size, int fingerprint_size_in_bits);
 
@@ -30,6 +31,10 @@ public:
 	struct H_KEY AddrAndFingerprint(uint64_t hash);
 
 	Table construct_table(const char *filename, int interval, int MNK, bool reduce_relocations);
+
+	void test_on_file(const char* filename, const char* results, Table table);
+
+	void test_on_random(const char* filename, const char* results, Table table, int number_of_unique, int length_of_sequence, int interval);
 
 private:
 	std::set<std::string> load_random(const char* filename, int number_of_unique, int length_of_sequence, int interval);
@@ -54,3 +59,9 @@ struct H_KEY
 	uint32_t h_2;
 	uint32_t fingerprint;
 };
+
+std::vector<std::string> split_by_word(std::string s);
+
+double get_average_from_vector(std::vector<double> data);
+
+double get_sum_from_vector(std::vector<double> data);

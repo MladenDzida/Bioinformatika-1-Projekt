@@ -16,6 +16,13 @@ Table::Table(int number_of_buckets, int bucket_size, int MNK, bool reduce_reloca
 	this->MNK = MNK;
 	this->MNK_counter = 0;
 	this->reduce_relocations = reduce_relocations;
+	this->number_of_insertion_call = 0;
+	this->number_of_insertions = 0;
+	this->tp = 0;
+	this->tn = 0;
+	this->fp = 0;
+	this->fn = 0;
+	this->not_stored = 0;
 
 	srand(unsigned(time(0)));
 
@@ -30,6 +37,8 @@ int Table::position(uint32_t hash) {
 }
 
 bool Table::insert(uint32_t hash1, uint32_t hash2, uint32_t fingerprint) {
+	this->number_of_insertion_call++;
+
 	int position1 = this->position(hash1);
 	int position2 = this->position(hash2);
 
@@ -48,7 +57,6 @@ bool Table::insert(uint32_t hash1, uint32_t hash2, uint32_t fingerprint) {
 			else
 				hash_table[position2].push_back(fingerprint);
 		}
-
 		return true;
 	}
 	else if (this->hash_table[position1].size() >= this->bucket_size && this->hash_table[position2].size() < this->bucket_size) {
@@ -60,8 +68,9 @@ bool Table::insert(uint32_t hash1, uint32_t hash2, uint32_t fingerprint) {
 		return true;
 	}
 	else{
-		if (this->MNK_counter >= this->MNK)
+		if (this->MNK_counter >= this->MNK) {
 			return false;
+		}
 
 		int random_bucket = rand() % 2 + 1;
 		int random_compartment = rand() % this->bucket_size;
@@ -74,8 +83,9 @@ bool Table::insert(uint32_t hash1, uint32_t hash2, uint32_t fingerprint) {
 			uint32_t new_hash = hash1 ^ (uint32_t)return_hash(tmp.sha_output);
 			this->MNK_counter += 1;
 			bool confirmation = this->insert(hash1, new_hash, fingerprint_to_relocate);
-			if (confirmation == false)
+			if (confirmation == false) {
 				return false;
+			}
 		}
 		else {
 			uint32_t fingerprint_to_relocate = hash_table[position1][random_compartment];
@@ -85,11 +95,13 @@ bool Table::insert(uint32_t hash1, uint32_t hash2, uint32_t fingerprint) {
 			uint32_t new_hash = hash2 ^ (uint32_t)return_hash(tmp.sha_output);
 			this->MNK_counter += 1;
 			bool confirmation = this->insert(new_hash, hash2, fingerprint_to_relocate);
-			if (confirmation == false)
+			if (confirmation == false) {
 				return false;
+			}
 		}
 		
 	}
+
 	return true;
 }
 
@@ -115,15 +127,26 @@ uint32_t Table::get_random(uint32_t hash) {
 	return tmp;
 }
 
-
-bool Table::lookup(uint32_t hash1, uint32_t hash2, uint32_t fingerprint) {
+bool Table::lookup(uint32_t hash1, uint32_t hash2, uint32_t fingerprint, bool in) {
 	int position1 = this->position(hash1);
 	int position2 = this->position(hash2);
 
 	if (std::find(this->hash_table[position1].begin(), this->hash_table[position1].end(), fingerprint) != this->hash_table[position1].end() || std::find(this->hash_table[position2].begin(), this->hash_table[position2].end(), fingerprint) != this->hash_table[position2].end()) {
+		if (in) {
+			this->tp++;
+		}
+		else {
+			this->fp++;
+		}
 		return true;
 	}
 	else {
+		if (in) {
+			this->fn++;
+		}
+		else {
+			this->tn++;
+		}
 		return false;
 	}
 }
@@ -132,7 +155,7 @@ void Table::print_horizontal_line(char c) {
 	for (int i = 0; i < this->bucket_size; i++) {
 		cout
 			<< left
-			<< '+' << c << c << c << c << c << c << c << c << c;
+			<< '+' << c << c << c << c << c << c << c << c << c << c << c << c;
 	}
 	cout << '+' << endl;
 }
@@ -143,9 +166,9 @@ void Table::print_table() {
 	for (int i = 0; i < this->bucket_size; i++) {
 		cout
 			<< left
-			<< setw(3)
+			<< setw(1)
 			<< "|"
-			<< setw(7)
+			<< setw(12)
 			<< "T:" + std::to_string(i);
 	}
 	cout << "|" << endl;
@@ -160,20 +183,39 @@ void Table::print_table() {
 			if (max_bucket > j) {
 				cout
 					<< left
-					<< setw(5)
+					<< setw(1)
 					<< "|"
-					<< setw(5)
+					<< setw(12)
 					<< tmp[j];
 				continue;
 			}
 
 			cout
 				<< left
-				<< setw(10)
+				<< setw(13)
 				<< "|";
 		}
 		cout << "|" << endl;
 
 		this->print_horizontal_line('_');
 	}
+}
+
+struct Info Table::get_info() {
+	Info info;
+	info.per_fill = this->get_fill();
+	info.bits = info.per_fill * (this->number_of_buckets * this->bucket_size) * 32;
+	info.num_of_insertion_call = this->number_of_insertion_call;
+	info.num_of_insertion = this->number_of_insertions;
+	info.num_of_buckets = this->number_of_buckets;
+	info.bucket_size = this->bucket_size;
+	info.MNK = this->MNK;
+	info.reduce = this->reduce_relocations;
+	info.tp = this->tp;
+	info.fp = this->fp;
+	info.fn = this->fn;
+	info.tn = this->tn;
+	info.not_stored = this->not_stored;
+	
+	return info;
 }

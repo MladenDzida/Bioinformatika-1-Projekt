@@ -12,6 +12,9 @@
 #include <cstdlib>
 #include <vector>
 #include "Table.h"
+#include <sstream>
+#include <time.h>
+#include <numeric>
 
 using namespace std;
 
@@ -29,6 +32,20 @@ uint64_t return_hash(unsigned char* to_hash) {
     ret = output.hash_64;
 
     return ret;
+}
+
+double get_average_from_vector(std::vector<double> data) {
+    if (data.empty()) {
+        return 0;
+    }
+    return std::accumulate(data.begin(), data.end(), 0.0) / data.size();
+}
+
+double get_sum_from_vector(std::vector<double> data) {
+    if (data.empty()) {
+        return 0;
+    }
+    return std::accumulate(data.begin(), data.end(), 0.0);
 }
 
 CuckooFilter::CuckooFilter(int number_of_buckets,int bucket_size, int fingerprint_size_in_bits){
@@ -91,6 +108,7 @@ set<string> CuckooFilter::load_random(const char *filename, int number_of_unique
         }
         unique.insert(string(buffer));
     }
+    file.close();
 
     return unique;
 }
@@ -154,10 +172,17 @@ Table CuckooFilter::construct_table(const char *filename, int interval, int MNK,
         uint64_t hash = return_hash((unsigned char*) it->c_str());
         H_KEY got = this->AddrAndFingerprint(hash);
 
+        const clock_t begin_time = clock();
         bool res = table1.insert(got.h_1, got.h_2, got.fingerprint);
+        this->insertion_time.push_back((double)(clock() - begin_time));
+
         table1.MNK_counter = 0;
         if (!res) {
-            cout << *it << endl;
+            // cout << *it << endl;
+            table1.not_stored++;
+        }
+        else {
+            table1.number_of_insertions++;
         }
 
         if (counter % 100000 == 0) {
@@ -165,4 +190,158 @@ Table CuckooFilter::construct_table(const char *filename, int interval, int MNK,
         }
     }
     return table1;
+}
+
+std::vector<string> split_by_word(string s) {
+    string s2 = s;
+    s2.erase(std::remove(s2.begin(), s2.end(), '\n'), s2.end());
+    
+    std::stringstream ss(s2);
+    std::istream_iterator<std::string> begin(ss);
+    std::istream_iterator<std::string> end;
+    std::vector<std::string> vstrings(begin, end);
+
+    return vstrings;
+}
+
+void CuckooFilter::test_on_file(const char* filename, const char* results, Table table) {
+    ifstream file;
+    file.open(filename);
+
+    ifstream writer_check;
+    writer_check.open(results);
+
+    ofstream writer;
+    writer.open(results, std::ios_base::app);
+
+    if (!file) {
+        cout << "Error opening a file." << endl;
+        exit(1);
+    }
+
+    if (!writer_check) {
+        cout << "Creating file..." << endl;
+        std::ofstream writer(results);
+
+        if (!writer) {
+            cout << "Error writing to file." << endl;
+            exit(1);
+        }
+
+        writer << "per_fill,bits,num_of_insertion_call,num_of_insert,num_of_buckets,bucket_size,MNK,reduce,tp,fp,fn,tn,not_stored,random,insertion_time,insertion_time_avg" << endl;
+    }
+    writer_check.close();
+
+    std::string str;
+    bool b;
+    while (std::getline(file, str))
+    {
+        std::vector<std::string> words = split_by_word(str);
+        std::istringstream(words[1]) >> b;
+
+        uint64_t returned = return_hash((unsigned char*) words[0].c_str());
+        H_KEY got = this->AddrAndFingerprint(returned);
+        table.lookup(got.h_1, got.h_2, got.fingerprint, b);
+    }
+    file.close();
+
+    Info info = table.get_info();
+    writer
+        << info.per_fill
+        << ","
+        << info.bits
+        << ","
+        << info.num_of_insertion_call
+        << ","
+        << info.num_of_insertion
+        << ","
+        << info.num_of_buckets
+        << ","
+        << info.bucket_size
+        << ","
+        << info.MNK
+        << ","
+        << info.reduce
+        << ","
+        << info.tp
+        << ","
+        << info.fp
+        << ","
+        << info.fn
+        << ","
+        << info.tn
+        << ","
+        << info.not_stored
+        << ","
+        << "False"
+        << ","
+        << get_sum_from_vector(this->insertion_time)
+        << ","
+        << get_average_from_vector(this->insertion_time)
+        << endl;
+}
+
+void CuckooFilter::test_on_random(const char* filename, const char* results, Table table, int number_of_unique, int length_of_sequence, int interval) {
+    ifstream writer_check;
+    writer_check.open(results);
+
+    ofstream writer;
+    writer.open(results, std::ios_base::app);
+
+    if (!writer_check) {
+        cout << "Creating file..." << endl;
+        std::ofstream writer(results);
+
+        if (!writer) {
+            cout << "Error writing to file." << endl;
+            exit(1);
+        }
+
+        writer << "per_fill,bits,num_of_insertion_call,num_of_insert,num_of_buckets,bucket_size,MNK,reduce,tp,fp,fn,tn,not_stored,random,insertion_time,insertion_time_avg" << endl;
+    }
+    writer_check.close();
+
+    std::set<std::string> rand = this->load_random(filename, number_of_unique, length_of_sequence, interval);
+    std::set<std::string>::iterator iterator = rand.begin();
+
+    for (int i = 0; i < rand.size(); i++) {
+        uint64_t returned = return_hash((unsigned char*) (*(iterator++)).c_str());
+        H_KEY got = this->AddrAndFingerprint(returned);
+        table.lookup(got.h_1, got.h_2, got.fingerprint, true);
+    }
+
+    Info info = table.get_info();
+    writer
+        << info.per_fill
+        << ","
+        << info.bits
+        << ","
+        << info.num_of_insertion_call
+        << ","
+        << info.num_of_insertion
+        << ","
+        << info.num_of_buckets
+        << ","
+        << info.bucket_size
+        << ","
+        << info.MNK
+        << ","
+        << info.reduce
+        << ","
+        << info.tp
+        << ","
+        << info.fp
+        << ","
+        << info.fn
+        << ","
+        << info.tn
+        << ","
+        << info.not_stored
+        << ","
+        << "True" 
+        << ","
+        << get_sum_from_vector(this->insertion_time)
+        << ","
+        << get_average_from_vector(this->insertion_time)
+        << endl;
 }

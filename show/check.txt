@@ -1,0 +1,3 @@
+Bok 1
+moz 1
+nop 0
