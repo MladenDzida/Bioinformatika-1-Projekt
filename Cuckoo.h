@@ -5,8 +5,6 @@
 #include "Table.h"
 #include <string>
 
-uint64_t return_hash(unsigned char* to_hash);
-
 class CuckooFilter
 {
 public:
@@ -17,12 +15,6 @@ public:
 	std::vector<double> mnk_counter;
 
 	CuckooFilter(int number_of_buckets, int bucket_size, int fingerprint_size_in_bits);
-
-	/**
-	Calculate SHA1 on unsigned char *to_hash, and returns uint64_t reprezentation of output.
-	@param to_hash - pointer to unsigned char array on which to calculate SHA1
-	@return uint64_t - result
-	*/
 
 	/**
 	Returns H_KEY structure which has 3 values: first hash (32 bits), second hash (32 bits) and fingerprint (32 bits).
@@ -66,3 +58,5 @@ std::vector<std::string> split_by_word(std::string s);
 double get_average_from_vector(std::vector<double> data);
 
 double get_average_from_vector(std::vector<double> data);
+
+uint64_t return_hash(unsigned char* to_hash);

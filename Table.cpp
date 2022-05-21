@@ -7,6 +7,9 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <cstring>
+#include <algorithm>
+#include <iterator>
 
 using namespace std;
 
