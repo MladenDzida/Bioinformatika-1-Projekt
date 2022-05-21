@@ -38,7 +38,7 @@ public:
 
 	};
 
-	double avg_row_fill();
+	double row_fill();
 
 	std::vector<std::vector<uint32_t>> hash_table;
 
@@ -63,5 +63,5 @@ struct Info {
 	int fn;
 	int tn;
 	int not_stored;
-	double avg_row_fill;
+	double row_fill;
 };

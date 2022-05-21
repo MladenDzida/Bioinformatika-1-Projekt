@@ -250,7 +250,7 @@ void CuckooFilter::test_on_file(const char* filename, const char* results, Table
             exit(1);
         }
 
-        writer << "per_fill,bits,num_of_insertion_call,num_of_insert,length_of_sequence,num_of_buckets,bucket_size,MNK,avg_MNK,reduce,tp,fp,fn,tn,not_stored,random,insertion_time,insertion_time_avg,fingerprint_size,avg_row_fill" << endl;
+        writer << "per_fill,bits,num_of_insertion_call,num_of_insert,length_of_sequence,num_of_buckets,bucket_size,MNK,avg_MNK,sum_MNK,reduce,tp,fp,fn,tn,not_stored,random,insertion_time,insertion_time_avg,fingerprint_size,row_fill" << endl;
     }
     writer_check.close();
 
@@ -290,6 +290,8 @@ void CuckooFilter::test_on_file(const char* filename, const char* results, Table
         << ","
         << get_average_from_vector(this->mnk_counter)
         << ","
+        << get_sum_from_vector(this->mnk_counter)
+        << ","
         << info.reduce
         << ","
         << info.tp
@@ -310,7 +312,7 @@ void CuckooFilter::test_on_file(const char* filename, const char* results, Table
         << ","
         << this->fingerprint_size_in_bits
         << ","
-        << info.avg_row_fill
+        << info.row_fill
         << endl;
     this->mnk_counter.clear();
     this->insertion_time.clear();
@@ -332,7 +334,7 @@ void CuckooFilter::test_on_random(const char* filename, const char* results, Tab
             exit(1);
         }
 
-        writer << "per_fill,bits,num_of_insertion_call,num_of_insert,length_of_sequence,num_of_buckets,bucket_size,MNK,avg_MNK,reduce,tp,fp,fn,tn,not_stored,random,insertion_time,insertion_time_avg,fingerprint_size,avg_row_fill" << endl;
+        writer << "per_fill,bits,num_of_insertion_call,num_of_insert,length_of_sequence,num_of_buckets,bucket_size,MNK,avg_MNK,sum_MNK,reduce,tp,fp,fn,tn,not_stored,random,insertion_time,insertion_time_avg,fingerprint_size,row_fill" << endl;
     }
     writer_check.close();
 
@@ -369,6 +371,8 @@ void CuckooFilter::test_on_random(const char* filename, const char* results, Tab
         << ","
         << get_average_from_vector(this->mnk_counter)
         << ","
+        << get_sum_from_vector(this->mnk_counter)
+        << ","
         << info.reduce
         << ","
         << info.tp
@@ -389,7 +393,7 @@ void CuckooFilter::test_on_random(const char* filename, const char* results, Tab
         << ","
         << this->fingerprint_size_in_bits
         << ","
-        << info.avg_row_fill
+        << info.row_fill
         << endl;
     this->mnk_counter.clear();
     this->insertion_time.clear();

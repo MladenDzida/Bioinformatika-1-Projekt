@@ -44,6 +44,7 @@ bool Table::insert(uint32_t hash1, uint32_t hash2, uint32_t fingerprint) {
 
 	
 	if (this->hash_table[position1].size() < this->bucket_size && this->hash_table[position2].size() < this->bucket_size) {
+		
 		if (this->reduce_relocations == false) {
 			int random_bucket = rand() % 2 + 1;
 			if (random_bucket == 1)
@@ -201,12 +202,13 @@ void Table::print_table() {
 	}
 }
 
-double Table::avg_row_fill() {
+double Table::row_fill() {
 	double sum = 0.0;
 	for (int i = 0; i < this->number_of_buckets; i++) {
-		sum += this->hash_table[i].size();
+		if (this->hash_table[i].size() == this->bucket_size)
+			sum += 1;
 	}
-	return sum / this->number_of_buckets;
+	return sum;
 }
 
 struct Info Table::get_info() {
@@ -224,7 +226,7 @@ struct Info Table::get_info() {
 	info.fn = this->fn;
 	info.tn = this->tn;
 	info.not_stored = this->not_stored;
-	info.avg_row_fill = this->avg_row_fill();
+	info.row_fill = this->row_fill();
 	
 	return info;
 }
