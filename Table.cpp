@@ -201,6 +201,14 @@ void Table::print_table() {
 	}
 }
 
+double Table::avg_row_fill() {
+	double sum = 0.0;
+	for (int i = 0; i < this->number_of_buckets; i++) {
+		sum += this->hash_table[i].size();
+	}
+	return sum / this->number_of_buckets;
+}
+
 struct Info Table::get_info() {
 	Info info;
 	info.per_fill = this->get_fill();
@@ -216,6 +224,7 @@ struct Info Table::get_info() {
 	info.fn = this->fn;
 	info.tn = this->tn;
 	info.not_stored = this->not_stored;
+	info.avg_row_fill = this->avg_row_fill();
 	
 	return info;
 }

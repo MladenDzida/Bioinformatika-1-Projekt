@@ -1,6 +1,9 @@
 #pragma once
 
 #include <vector>
+#include <iostream>
+
+using namespace std;
 
 class Table {
 public:
@@ -31,8 +34,15 @@ public:
 
 	struct Info get_info();
 
-private:
+	~Table() {
+
+	};
+
+	double avg_row_fill();
+
 	std::vector<std::vector<uint32_t>> hash_table;
+
+private:
 
 	int position(uint32_t hash);
 
@@ -53,4 +63,5 @@ struct Info {
 	int fn;
 	int tn;
 	int not_stored;
+	double avg_row_fill;
 };

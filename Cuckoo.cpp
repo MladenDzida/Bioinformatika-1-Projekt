@@ -15,6 +15,8 @@
 #include <sstream>
 #include <time.h>
 #include <numeric>
+#include <iomanip>
+#include <chrono>
 
 using namespace std;
 
@@ -85,7 +87,7 @@ set<string> CuckooFilter::load_random(const char *filename, int number_of_unique
 
 
     for (int n = 0; n < number_of_unique; n++) {
-        char* buffer = new char[length_of_sequence];
+        char* buffer = new char[length_of_sequence + 1];
         buffer[length_of_sequence] = '\0';
 
         int ran = rand() % interval + 1;
@@ -93,13 +95,21 @@ set<string> CuckooFilter::load_random(const char *filename, int number_of_unique
         file.seekg(ran + file.tellg(), ios::beg);
         file.read(buffer, length_of_sequence);
 
+
         for (int i = 0; i < length_of_sequence; i++) {
             if (buffer[i] == '\n') {
                 for (int j = i; j < length_of_sequence - 1; j++) {
                     buffer[j] = buffer[j + 1];
                 }
+
                 file.read(buffer + length_of_sequence - 1, 1);
-                i--;
+
+                if (file.tellg() == -1)
+                    break;
+
+                if (i != 0) {
+                    i--;
+                }
             }
         }
 
@@ -124,34 +134,39 @@ set<string> CuckooFilter::load_file(const char* filename, int interval) {
 
     set<string> unique;
     int counter = 0;
+    bool flag = false;
+    bool first = false;
+    int position = 0;
 
     while (file.tellg() != -1) {
+        flag = false;
         char* buffer = new char[interval + 1];
         buffer[interval] = '\0';
 
+        file.seekg(position, ios::beg);
         file.read(buffer, interval);
 
         for (int i = 0; i < interval; i++) {
+            if (buffer[i] == '\n' && i == 0) {
+                flag = true;
+            }
             if (buffer[i] == '\n') {
                 for (int j = i; j < interval - 1; j++) {
                     buffer[j] = buffer[j + 1];
                 }
                 file.read(buffer + interval - 1, 1);
-                i--;
             }
         }
 
-        if (file.tellg() != -1) {
-            unique.insert(string(buffer));
+        if (file.tellg() != -1 && !flag) {
             // cout << buffer << endl;
+            unique.insert(string(buffer));
             counter++;
             if (counter % 100000 == 0) {
                 cout << counter << endl;
             }
         }
-
-
-        file.seekg(-(interval - 1 - file.tellg()), ios::beg);
+        position++;
     }
     return unique;
 }
@@ -169,16 +184,23 @@ Table CuckooFilter::construct_table(const char *filename, int interval, int MNK,
 
     for (it = unique.begin(); it != unique.end(); ++it) {
         counter++;
+
+        auto t1 = std::chrono::high_resolution_clock::now();
         uint64_t hash = return_hash((unsigned char*) it->c_str());
         H_KEY got = this->AddrAndFingerprint(hash);
-
-        const clock_t begin_time = clock();
         bool res = table1.insert(got.h_1, got.h_2, got.fingerprint);
-        this->insertion_time.push_back((double)(clock() - begin_time));
+        auto t2 = std::chrono::high_resolution_clock::now();
 
+        auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
+        std::chrono::duration<double, std::milli> ms_double = t2 - t1;
+
+        this->insertion_time.push_back((double)ms_double.count());
+
+        // this->insertion_time.push_back((double)(clock() - begin_time));
+        this->mnk_counter.push_back(table1.MNK_counter);
         table1.MNK_counter = 0;
         if (!res) {
-            // cout << *it << endl;
+            cout << *it << endl;
             table1.not_stored++;
         }
         else {
@@ -228,16 +250,19 @@ void CuckooFilter::test_on_file(const char* filename, const char* results, Table
             exit(1);
         }
 
-        writer << "per_fill,bits,num_of_insertion_call,num_of_insert,num_of_buckets,bucket_size,MNK,reduce,tp,fp,fn,tn,not_stored,random,insertion_time,insertion_time_avg" << endl;
+        writer << "per_fill,bits,num_of_insertion_call,num_of_insert,length_of_sequence,num_of_buckets,bucket_size,MNK,avg_MNK,reduce,tp,fp,fn,tn,not_stored,random,insertion_time,insertion_time_avg,fingerprint_size,avg_row_fill" << endl;
     }
     writer_check.close();
 
     std::string str;
     bool b;
+    int interval = -1;
     while (std::getline(file, str))
     {
         std::vector<std::string> words = split_by_word(str);
         std::istringstream(words[1]) >> b;
+
+        interval = words[0].length();
 
         uint64_t returned = return_hash((unsigned char*) words[0].c_str());
         H_KEY got = this->AddrAndFingerprint(returned);
@@ -255,11 +280,15 @@ void CuckooFilter::test_on_file(const char* filename, const char* results, Table
         << ","
         << info.num_of_insertion
         << ","
+        << interval
+        << ","
         << info.num_of_buckets
         << ","
         << info.bucket_size
         << ","
         << info.MNK
+        << ","
+        << get_average_from_vector(this->mnk_counter)
         << ","
         << info.reduce
         << ","
@@ -278,10 +307,16 @@ void CuckooFilter::test_on_file(const char* filename, const char* results, Table
         << get_sum_from_vector(this->insertion_time)
         << ","
         << get_average_from_vector(this->insertion_time)
+        << ","
+        << this->fingerprint_size_in_bits
+        << ","
+        << info.avg_row_fill
         << endl;
+    this->mnk_counter.clear();
+    this->insertion_time.clear();
 }
 
-void CuckooFilter::test_on_random(const char* filename, const char* results, Table table, int number_of_unique, int length_of_sequence, int interval) {
+void CuckooFilter::test_on_random(const char* filename, const char* results, Table table, int number_of_unique, int length_of_sequence, int interval, bool is_it_in) {
     ifstream writer_check;
     writer_check.open(results);
 
@@ -297,17 +332,21 @@ void CuckooFilter::test_on_random(const char* filename, const char* results, Tab
             exit(1);
         }
 
-        writer << "per_fill,bits,num_of_insertion_call,num_of_insert,num_of_buckets,bucket_size,MNK,reduce,tp,fp,fn,tn,not_stored,random,insertion_time,insertion_time_avg" << endl;
+        writer << "per_fill,bits,num_of_insertion_call,num_of_insert,length_of_sequence,num_of_buckets,bucket_size,MNK,avg_MNK,reduce,tp,fp,fn,tn,not_stored,random,insertion_time,insertion_time_avg,fingerprint_size,avg_row_fill" << endl;
     }
     writer_check.close();
 
     std::set<std::string> rand = this->load_random(filename, number_of_unique, length_of_sequence, interval);
-    std::set<std::string>::iterator iterator = rand.begin();
 
-    for (int i = 0; i < rand.size(); i++) {
-        uint64_t returned = return_hash((unsigned char*) (*(iterator++)).c_str());
+    std::set<std::string>::iterator iterator;
+
+    for (iterator = rand.begin(); iterator != rand.end(); ++iterator) {
+        uint64_t returned = return_hash((unsigned char*) (*(iterator)).c_str());
         H_KEY got = this->AddrAndFingerprint(returned);
-        table.lookup(got.h_1, got.h_2, got.fingerprint, true);
+        bool loook = table.lookup(got.h_1, got.h_2, got.fingerprint, is_it_in);
+        if (!loook) {
+            cout << *iterator << "\t" << string(*(iterator)).length() << "\t" << got.fingerprint << endl;
+        }
     }
 
     Info info = table.get_info();
@@ -320,11 +359,15 @@ void CuckooFilter::test_on_random(const char* filename, const char* results, Tab
         << ","
         << info.num_of_insertion
         << ","
+        << length_of_sequence
+        << ","
         << info.num_of_buckets
         << ","
         << info.bucket_size
         << ","
         << info.MNK
+        << ","
+        << get_average_from_vector(this->mnk_counter)
         << ","
         << info.reduce
         << ","
@@ -343,5 +386,12 @@ void CuckooFilter::test_on_random(const char* filename, const char* results, Tab
         << get_sum_from_vector(this->insertion_time)
         << ","
         << get_average_from_vector(this->insertion_time)
+        << ","
+        << this->fingerprint_size_in_bits
+        << ","
+        << info.avg_row_fill
         << endl;
+    this->mnk_counter.clear();
+    this->insertion_time.clear();
+    cout << "DONE" << endl;
 }

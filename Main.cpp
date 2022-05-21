@@ -4,7 +4,7 @@
 
 using namespace std;
 
-int main() {
+int main1() {
 
     unsigned char s_2[] = "Mladen sas sadfsgfs dfgfsdgsfdh sgfhgfhgdjdg jh gfhdghdghgh dghdghdgh Mladen sas sadfsgfs dfgfsdgsfdh sgfhgfhgdjdg jh gfhdghdghgh dghdghdgh Mladen sas sadfsgfs dfgfsdgsfdh sgfhgfhgdjdg jh gfhdghdghgh dghdghdgh Mladen sas sadfsgfs dfgfsdgsfdh sgfhgfhgdjdg jh gfhdghdghgh dghdghdgh Mladen sas sadfsgfs dfgfsdgsfdh Mgfhgfhgdjdg jh gfhdghdghgh dghdghdgh";
     unsigned char s_3[] = "Mladen sas sadfsgfs dfgfsdgsfdh sgfhgfhgdjdg jh gfhdghdghgh dghdghdgh Mladen sas sadfsgfs dfgfsdgsfdh sgfhgfhgdjdg jh gfhdghdghgh dghdghdgh Mladen sas sadfsgfs dfgfsdgsfdh sgfhgfhgdjdg jh gfhdghdghgh dghdghdgh Mladen sas sadfsgfs dfgfsdgsfdh sgfhgfhgdjdg jh gfhdghdghgh dghdghdgh Mladen sas sadfsgfs dfgfsdgsfdh sgfhgfhgdjdg jh gfhdghdghgh dghdghdgh";
@@ -72,7 +72,7 @@ int main() {
     cout << "fingerprint2 se nalazi u tablici za hash2? " << table1.lookup(got_2.h_1, got_2.h_2, got_2.fingerprint) << endl;
     cout << "fingerprint1 se nalazi u tablici za hash2? " << table1.lookup(got_2.h_1, got_2.h_2, got.fingerprint) << endl;*/
 
-    CuckooFilter filter(10, 4, 18);
+    CuckooFilter filter(20, 5, 18);
     // set<char*> ha = filter.load_file(
     //     "C:\\Users\\grga\\Documents\\Fakultet\\DIPLOMSKI\\2_semestar\\bioinformatika_1\\Bioinformatika_1\\Bioinformatika_1\\Bioinformatika-1-Projekt\\genom.fna",
     //     10);
@@ -82,8 +82,9 @@ int main() {
         // cout << *it << endl;
     // }
 
-    Table table = filter.construct_table("C:\\Users\\grga\\Documents\\Fakultet\\DIPLOMSKI\\2_semestar\\bioinformatika_1\\Bioinformatika_1\\Bioinformatika_1\\Bioinformatika-1-Projekt\\idemo.txt",
-         3, 1000, false);
+    Table table = filter.construct_table("C:\\Users\\grga\\Documents\\Fakultet\\DIPLOMSKI\\2_semestar\\bioinformatika_1\\Bioinformatika_1\\Bioinformatika_1\\Bioinformatika-1-Projekt\\show\\idemo.txt",
+         8, 100, false);
+    table.print_table();
 
     // while (true) {
     //     string s;
@@ -95,14 +96,15 @@ int main() {
     //     cout << table.lookup(got.h_1, got.h_2, got.fingerprint) << endl;
     // }
 
-    filter.test_on_file("C:\\Users\\grga\\Documents\\Fakultet\\DIPLOMSKI\\2_semestar\\bioinformatika_1\\Bioinformatika_1\\Bioinformatika_1\\Bioinformatika-1-Projekt\\check.txt",
-        "C:\\Users\\grga\\Documents\\Fakultet\\DIPLOMSKI\\2_semestar\\bioinformatika_1\\Bioinformatika_1\\Bioinformatika_1\\Bioinformatika-1-Projekt\\results.txt",
-        table);
-    table.print_table();
+    //filter.test_on_file("C:\\Users\\grga\\Documents\\Fakultet\\DIPLOMSKI\\2_semestar\\bioinformatika_1\\Bioinformatika_1\\Bioinformatika_1\\Bioinformatika-1-Projekt\\show\\check.txt",
+    //    "C:\\Users\\grga\\Documents\\Fakultet\\DIPLOMSKI\\2_semestar\\bioinformatika_1\\Bioinformatika_1\\Bioinformatika_1\\Bioinformatika-1-Projekt\\results.txt",
+    //    table);
+    // table.print_table();
 
-    filter.test_on_random("C:\\Users\\grga\\Documents\\Fakultet\\DIPLOMSKI\\2_semestar\\bioinformatika_1\\Bioinformatika_1\\Bioinformatika_1\\Bioinformatika-1-Projekt\\idemo.txt",
-        "C:\\Users\\grga\\Documents\\Fakultet\\DIPLOMSKI\\2_semestar\\bioinformatika_1\\Bioinformatika_1\\Bioinformatika_1\\Bioinformatika-1-Projekt\\results.txt",
-        table, 10, 3, 2);
+    filter.test_on_random("C:\\Users\\grga\\Documents\\Fakultet\\DIPLOMSKI\\2_semestar\\bioinformatika_1\\Bioinformatika_1\\Bioinformatika_1\\Bioinformatika-1-Projekt\\show\\idemo.txt",
+        "C:\\Users\\grga\\Documents\\Fakultet\\DIPLOMSKI\\2_semestar\\bioinformatika_1\\Bioinformatika_1\\Bioinformatika_1\\Bioinformatika-1-Projekt\\show\\results.txt",
+       table, 10, 8, 2, true);
 
     system("Pause");
+    return 0;
 }
