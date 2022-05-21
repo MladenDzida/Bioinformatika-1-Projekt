@@ -5,13 +5,13 @@
 
 using namespace std;
 
-int main10() {
+int main() {
 	// num of buckets
 	// bucket size
 	// fingerptint size in bits
 
-	const char* genom_path = "C:\\Users\\grga\\Documents\\Fakultet\\DIPLOMSKI\\2_semestar\\bioinformatika_1\\Bioinformatika_1\\Bioinformatika_1\\Bioinformatika-1-Projekt\\genom.fna";
-	const char* results_path = "C:\\Users\\grga\\Documents\\Fakultet\\DIPLOMSKI\\2_semestar\\bioinformatika_1\\Bioinformatika_1\\Bioinformatika_1\\Bioinformatika-1-Projekt\\results.txt";
+	const char* genom_path = "C:\\Users\\Mladen\\Desktop\\predmeti\\2_semestar\\bioinformatika 1\\projekt\\Bioinformatika-1-Projekt\\genom.fna";
+	const char* results_path = "C:\\Users\\Mladen\\Desktop\\predmeti\\2_semestar\\bioinformatika 1\\projekt\\Bioinformatika-1-Projekt\\results.txt";
 
 	// We choose 10000 x 100 number of positions beacuse good fillment rate is 50%.
 
@@ -33,5 +33,5 @@ int main10() {
 	filter_1.test_on_random(genom_path, results_path, table_1, test_length, k_gram, test_step, true);
 
 	system("Pause");
-	return 1;
+	//return 1;
 }
