@@ -346,9 +346,6 @@ void CuckooFilter::test_on_random(const char* filename, const char* results, Tab
         uint64_t returned = return_hash((unsigned char*) (*(iterator)).c_str());
         H_KEY got = this->AddrAndFingerprint(returned);
         bool loook = table.lookup(got.h_1, got.h_2, got.fingerprint, is_it_in);
-        if (!loook) {
-            cout << *iterator << "\t" << string(*(iterator)).length() << "\t" << got.fingerprint << endl;
-        }
     }
 
     Info info = table.get_info();
