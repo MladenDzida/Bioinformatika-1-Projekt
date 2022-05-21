@@ -5,7 +5,7 @@
 
 using namespace std;
 
-int main() {
+int main10() {
 	unsigned char s_1[] = "Marko jede sniclu";
 	unsigned char s_2[] = "Marko jede snitu";
 
@@ -93,5 +93,5 @@ int main() {
 	cout << "\tUnutra je: " << table1.lookup(info_3.h_1, info_3.h_2, info_3.fingerprint, false) << endl;
 
 	system("pause");
-	// return 2;
+	return 2;
 }

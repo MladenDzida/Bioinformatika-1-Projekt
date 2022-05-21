@@ -2,35 +2,50 @@
 #include "Cuckoo.h"
 #include "Table.h"
 #include <bitset>
+#include <fstream>
+#include <sstream>
+#include <map>
 
 using namespace std;
 
-int main() {
-	// num of buckets
-	// bucket size
-	// fingerptint size in bits
+int main(int argc, char* argv[]) {
+	const char* parameters[1];
+	std::map<std::string, std::string> map_;
 
-	const char* genom_path = "C:\\Users\\Mladen\\Desktop\\predmeti\\2_semestar\\bioinformatika 1\\projekt\\Bioinformatika-1-Projekt\\genom.fna";
-	const char* results_path = "C:\\Users\\Mladen\\Desktop\\predmeti\\2_semestar\\bioinformatika 1\\projekt\\Bioinformatika-1-Projekt\\results.txt";
+	for (int i = 0; i < argc; ++i) {
+		if (i == 0)
+			continue;
 
-	// We choose 10000 x 100 number of positions beacuse good fillment rate is 50%.
+		parameters[i - 1] = argv[i];
+	}
 
-	// TEST BY FINGERPRINT BITS
-	int k_gram = 10;
+	ifstream file;
+	file.open(parameters[0]);
+	
+	if (!file) {
+		cout << "File " << parameters[0] << " does not exists." << endl;
+		exit(0);
+	}
 
-	int num_of_buckets = 10000;
-	int num_of_slots = 1000;
-	int f = 18;
+	std::string name;
+	std::string value;
+	while (file >> name >> value) {
+		map_.insert({ name, value });
+	}
 
-	int MNK = 1000;
-	bool reduce = false;
-
-	int test_length = 10000;
-	int test_step = 1000;
+	
+	int k_gram = stoi(map_["k_gram"]);
+	int num_of_buckets = stoi(map_["num_of_buckets"]);
+	int num_of_slots = stoi(map_["num_of_slots"]);
+	int f = stoi(map_["f"]);
+	int MNK = stoi(map_["MNK"]);
+	bool reduce = (bool)stoi(map_["reduce"]);
+	int test_length = stoi(map_["test_length"]);
+	int test_step = stoi(map_["test_step"]);
 
 	CuckooFilter filter_1(num_of_buckets, num_of_slots, f);
-	Table table_1 = filter_1.construct_table(genom_path, k_gram, MNK, reduce);
-	filter_1.test_on_random(genom_path, results_path, table_1, test_length, k_gram, test_step, true);
+	Table table_1 = filter_1.construct_table(map_["genom_path"].c_str(), k_gram, MNK, reduce);
+	filter_1.test_on_random(map_["genom_path"].c_str(), map_["results_path"].c_str(), table_1, test_length, k_gram, test_step, true);
 
 	system("Pause");
 	//return 1;

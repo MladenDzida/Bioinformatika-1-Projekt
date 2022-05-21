@@ -1,7 +1,5 @@
 #include <iostream>
 #include "Cuckoo.h"
-#include <winsock2.h>
-#include <windows.h>
 #include <openssl/sha.h>
 #include <cmath>
 #include <bitset>
@@ -17,6 +15,9 @@
 #include <numeric>
 #include <iomanip>
 #include <chrono>
+#include <cstring>
+#include <algorithm>
+#include <iterator>
 
 using namespace std;
 
@@ -200,7 +201,7 @@ Table CuckooFilter::construct_table(const char *filename, int interval, int MNK,
         this->mnk_counter.push_back(table1.MNK_counter);
         table1.MNK_counter = 0;
         if (!res) {
-            cout << *it << endl;
+            // cout << *it << endl;
             table1.not_stored++;
         }
         else {
