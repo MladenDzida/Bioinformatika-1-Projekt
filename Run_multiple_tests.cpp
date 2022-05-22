@@ -42,10 +42,11 @@ int main(int argc, char* argv[]) {
 	bool reduce = (bool)stoi(map_["reduce"]);
 	int test_length = stoi(map_["test_length"]);
 	int test_step = stoi(map_["test_step"]);
+	bool exists = (bool)stoi(map_["exists"]);
 
 	CuckooFilter filter_1(num_of_buckets, num_of_slots, f);
 	Table table_1 = filter_1.construct_table(map_["genom_path"].c_str(), k_gram, MNK, reduce);
-	filter_1.test_on_random(map_["genom_path"].c_str(), map_["results_path"].c_str(), table_1, test_length, k_gram, test_step, true);
+	filter_1.test_on_random(map_["genom_path"].c_str(), map_["results_path"].c_str(), table_1, test_length, k_gram, test_step, exists);
 
 	system("Pause");
 	//return 1;

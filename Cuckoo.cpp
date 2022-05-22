@@ -11,6 +11,7 @@
 #include <vector>
 #include "Table.h"
 #include <sstream>
+#include <streambuf>
 #include <time.h>
 #include <numeric>
 #include <iomanip>
@@ -86,8 +87,19 @@ set<string> CuckooFilter::load_random(const char *filename, int number_of_unique
 
     set<string> unique;
 
+    std::string text((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    text.erase(std::remove(text.begin(), text.end(), '\n'), text.end());
 
-    for (int n = 0; n < number_of_unique; n++) {
+    int i = 0;
+    int ran = 0;
+    int last = 0;
+    for (int n = 0; n < number_of_unique && last < text.length(); n++) {
+        ran = rand() % interval + 1;
+        unique.insert(text.substr(last + ran, length_of_sequence));
+        last += ran;
+    }
+
+    /*for (int n = 0; n < number_of_unique; n++) {
         char* buffer = new char[length_of_sequence + 1];
         buffer[length_of_sequence] = '\0';
 
@@ -118,7 +130,7 @@ set<string> CuckooFilter::load_random(const char *filename, int number_of_unique
             break;
         }
         unique.insert(string(buffer));
-    }
+    }*/
     file.close();
 
     return unique;
@@ -139,36 +151,48 @@ set<string> CuckooFilter::load_file(const char* filename, int interval) {
     bool first = false;
     int position = 0;
 
-    while (file.tellg() != -1) {
-        flag = false;
-        char* buffer = new char[interval + 1];
-        buffer[interval] = '\0';
+    std::string text((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    text.erase(std::remove(text.begin(), text.end(), '\n'), text.end());
 
-        file.seekg(position, ios::beg);
-        file.read(buffer, interval);
-
-        for (int i = 0; i < interval; i++) {
-            if (buffer[i] == '\n' && i == 0) {
-                flag = true;
-            }
-            if (buffer[i] == '\n') {
-                for (int j = i; j < interval - 1; j++) {
-                    buffer[j] = buffer[j + 1];
-                }
-                file.read(buffer + interval - 1, 1);
-            }
-        }
-
-        if (file.tellg() != -1 && !flag) {
-            // cout << buffer << endl;
-            unique.insert(string(buffer));
-            counter++;
-            if (counter % 100000 == 0) {
-                cout << counter << endl;
-            }
-        }
-        position++;
+    int i = 0;
+    while (i < text.length() - interval) {
+        unique.insert(text.substr(i, interval));
+        i++;
     }
+
+    cout << text.length() << endl;
+
+    //while (file.tellg() != -1) {
+    //    flag = false;
+    //    char* buffer = new char[interval + 1];
+    //    buffer[interval] = '\0';
+
+    //    file.seekg(position, ios::beg);
+    //    file.read(buffer, interval);
+
+    //    for (int i = 0; i < interval; i++) {
+    //        if (buffer[i] == '\n' && i == 0) {
+    //            flag = true;
+    //        }
+    //        if (buffer[i] == '\n') {
+    //            for (int j = i; j < interval - 1; j++) {
+    //                buffer[j] = buffer[j + 1];
+    //            }
+    //            file.read(buffer + interval - 1, 1);
+    //        }
+    //    }
+
+    //    if (file.tellg() != -1 && !flag) {
+    //        // cout << buffer << endl;
+    //        unique.insert(string(buffer));
+    //        counter++;
+    //        if (counter % 100000 == 0) {
+    //            cout << counter << endl;
+    //        }
+    //    }
+    //    position++;
+    //}
+    file.close();
     return unique;
 }
 

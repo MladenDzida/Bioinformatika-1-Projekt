@@ -1,10 +1,11 @@
 genom_path C:\\Users\\grga\\Documents\\Fakultet\\DIPLOMSKI\\2_semestar\\bioinformatika_1\\Bioinformatika_1\\Bioinformatika_1\\Bioinformatika-1-Projekt\\genom.fna
 results_path C:\\Users\\grga\\Documents\\Fakultet\\DIPLOMSKI\\2_semestar\\bioinformatika_1\\Bioinformatika_1\\Bioinformatika_1\\Bioinformatika-1-Projekt\\results.txt
-k_gram 200
-num_of_buckets 25000
-num_of_slots 100
+k_gram 30
+num_of_buckets 5000
+num_of_slots 1000
 f 18
-MNK 10
+MNK 100
 reduce 0
 test_length 10000
 test_step 1000
+exists 1
