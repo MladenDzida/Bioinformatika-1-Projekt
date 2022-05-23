@@ -22,6 +22,12 @@
 
 using namespace std;
 
+/**
+ * Function for returning SHA1 hash of an item
+ *
+ * @param to_hash item to be hashed
+ * @return SHA1 hash of the item
+ */
 uint64_t return_hash(unsigned char* to_hash) {
     // define length of characters
     size_t length = strlen((char*)to_hash);
@@ -38,6 +44,13 @@ uint64_t return_hash(unsigned char* to_hash) {
     return ret;
 }
 
+
+/**
+ * Function for getting average value of vector
+ *
+ * @param data vector for which to calculate average
+ * @return average of the vector
+ */
 double get_average_from_vector(std::vector<double> data) {
     if (data.empty()) {
         return 0;
@@ -45,6 +58,12 @@ double get_average_from_vector(std::vector<double> data) {
     return std::accumulate(data.begin(), data.end(), 0.0) / data.size();
 }
 
+/**
+ * Function for getting sum value of vector
+ *
+ * @param data vector for which to calculate sum
+ * @return sum of the vector
+ */
 double get_sum_from_vector(std::vector<double> data) {
     if (data.empty()) {
         return 0;
@@ -52,6 +71,14 @@ double get_sum_from_vector(std::vector<double> data) {
     return std::accumulate(data.begin(), data.end(), 0.0);
 }
 
+
+/**
+ * Constructor function for CuckooFilter class
+ *
+ * @param number_of_buckets number of buckets wanted
+ * @param bucket_size number of compartments inside a bucket wanted
+ * @param fingerprint_size_in_bits number of bits for storing fingerprint
+ */
 CuckooFilter::CuckooFilter(int number_of_buckets,int bucket_size, int fingerprint_size_in_bits){
     this->number_of_buckets = number_of_buckets;
     this->bucket_size = bucket_size;
@@ -60,6 +87,13 @@ CuckooFilter::CuckooFilter(int number_of_buckets,int bucket_size, int fingerprin
     srand(unsigned(time(0)));
 }
 
+
+/**
+ * Function for getting first hash, second hash and fingerprint
+ *
+ * @param has item
+ * @return field that stores first hash, second hash and fingerprint
+ */
 struct H_KEY CuckooFilter::AddrAndFingerprint(uint64_t has) {
     H_KEY to_ret;
     uint32_t mask = (uint32_t) (pow(2, 32)) - 1;
@@ -76,6 +110,16 @@ struct H_KEY CuckooFilter::AddrAndFingerprint(uint64_t has) {
     return to_ret;
 }
 
+
+/**
+ * Function for getting random sequences from file
+ *
+ * @param filename file from which to take sequences
+ * @param number_of_unique number of unique k-mer
+ * @param length_of_sequence length of each sequence
+ * @param interval parameter to help randomness
+ * @return random k-mers
+ */
 set<string> CuckooFilter::load_random(const char *filename, int number_of_unique, int length_of_sequence, int interval) {
     ifstream file;
     file.open(filename);
@@ -136,6 +180,14 @@ set<string> CuckooFilter::load_random(const char *filename, int number_of_unique
     return unique;
 }
 
+
+/**
+ * Function for getting all k-mers from a file
+ *
+ * @param filename file from which to take k-mers
+ * @param interval length of k-mer
+ * @return k-mers
+ */
 set<string> CuckooFilter::load_file(const char* filename, int interval) {
     ifstream file;
     file.open(filename);
@@ -196,6 +248,15 @@ set<string> CuckooFilter::load_file(const char* filename, int interval) {
     return unique;
 }
 
+/**
+ * Function for creating the table and storing items in it
+ *
+ * @param filename file from which to take k-mers
+ * @param interval length of k-mer
+ * @param MNK maximum number of kicks
+ * @param reduce_relocations boolean value that indicates using version of the algorithm with reduced number of relocations
+ * @return Table object
+ */
 Table CuckooFilter::construct_table(const char *filename, int interval, int MNK, bool reduce_relocations) {
     set<string> unique = this->load_file(filename, interval);
 
@@ -239,6 +300,12 @@ Table CuckooFilter::construct_table(const char *filename, int interval, int MNK,
     return table1;
 }
 
+/**
+ * Function creating a sequence of strings without new line character inside
+ *
+ * @param s strin to split by word
+ * @return splitted string
+ */
 std::vector<string> split_by_word(string s) {
     string s2 = s;
     s2.erase(std::remove(s2.begin(), s2.end(), '\n'), s2.end());
@@ -251,6 +318,13 @@ std::vector<string> split_by_word(string s) {
     return vstrings;
 }
 
+/**
+ * Function for creating and storing evaluation metrics on a file of k-mers
+ *
+ * @param filename file where to store metrics
+ * @param results string with different metrics
+ * @param table Table object with all items stored
+ */
 void CuckooFilter::test_on_file(const char* filename, const char* results, Table table) {
     ifstream file;
     file.open(filename);
@@ -343,6 +417,17 @@ void CuckooFilter::test_on_file(const char* filename, const char* results, Table
     this->insertion_time.clear();
 }
 
+/**
+ * Function for creating and storing evaluation metrics on random k-mers
+ *
+ * @param filename file where to store metrics
+ * @param results string with different metrics
+ * @param table Table object with all items stored
+ * @param number_of_unique number of unique k-mers
+ * @param length_of_sequence length of k-mer
+ * @param interval paramets used to get randomness
+ * @param is_it_in boolean value that indicated if certain element is in fact in the table
+ */
 void CuckooFilter::test_on_random(const char* filename, const char* results, Table table, int number_of_unique, int length_of_sequence, int interval, bool is_it_in) {
     ifstream writer_check;
     writer_check.open(results);
