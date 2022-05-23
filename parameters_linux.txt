@@ -1,5 +1,5 @@
-genom_path /mnt/c/Users/grga/Documents/Fakultet/DIPLOMSKI/2_semestar/bioinformatika_1/Bioinformatika_1/Bioinformatika_1/Bioinformatika-1-Projekt/genom.fna
-results_path /mnt/c/Users/grga/Documents/Fakultet/DIPLOMSKI/2_semestar/bioinformatika_1/Bioinformatika_1/Bioinformatika_1/Bioinformatika-1-Projekt/results.txt
+genom_path <path_to_path_file>
+results_path <path_to_results_file>
 k_gram 200
 num_of_buckets 25000
 num_of_slots 100
