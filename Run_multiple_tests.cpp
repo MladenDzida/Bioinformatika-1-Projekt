@@ -49,5 +49,4 @@ int main(int argc, char* argv[]) {
 	filter_1.test_on_random(map_["genom_path"].c_str(), map_["results_path"].c_str(), table_1, test_length, k_gram, test_step, exists);
 
 	system("Pause");
-	//return 1;
 }
