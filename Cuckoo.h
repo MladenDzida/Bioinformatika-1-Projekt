@@ -13,6 +13,8 @@ public:
 	int fingerprint_size_in_bits;
 	std::vector<double> insertion_time;
 	std::vector<double> mnk_counter;
+	std::set<std::string> not_stored;
+	std::set<std::string> test_set;
 
 	CuckooFilter(int number_of_buckets, int bucket_size, int fingerprint_size_in_bits);
 
@@ -29,8 +31,9 @@ public:
 
 	void test_on_random(const char* filename, const char* results, Table table, int number_of_unique, int length_of_sequence, int interval, bool is_it_in);
 
-private:
 	std::set<std::string> load_random(const char* filename, int number_of_unique, int length_of_sequence, int interval);
+
+private:
 	std::set<std::string> load_file(const char* filename, int interval);
 };
 
